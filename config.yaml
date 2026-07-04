@@ -1,0 +1,82 @@
+# ============================================================================
+# milly-agent configuration
+#
+# Every option below has a built-in default — if this file is missing or a key
+# is omitted, milly-agent falls back to the defaults shown here.
+# ============================================================================
+
+# --- Core ---
+default_model: llama3.2                # Ollama model used for inference (see `ollama list`)
+temperature: 0.7                       # Sampling temperature; 0.0 = deterministic, 1.0 = creative
+ollama_host: http://localhost:11434    # Ollama API endpoint (local by default — no egress)
+
+# --- Runtime data ---
+# Base directory for ALL runtime state. The four runtime dirs live under it:
+#   <data_dir>/docs       documents indexed by RAG
+#   <data_dir>/logs       security audit log
+#   <data_dir>/memory     HMAC-signed session history + RAG index
+#   <data_dir>/workspace  sandbox for the agent's file tools
+# A relative path is resolved against the directory containing this config
+# file (NOT the process working directory), so `milly-agent` works no matter
+# where you launch it from.
+data_dir: ./data
+
+# --- Agent loop ---
+max_tool_iterations: 5                 # Max LLM calls per user message before the turn is capped
+
+# --- Authorization ---
+# Who may talk to the agent, keyed by transport. IDs are:
+#   cli      — always "local" (the person at the terminal)
+#   telegram — numeric Telegram user IDs
+#   discord  — numeric Discord user IDs
+authz:
+  owners:                              # Full access, including tool execution
+    cli: ["local"]
+    telegram: []
+    discord: []
+  guests: {}                           # May chat but not run tools, e.g. telegram: [12345]
+  allow_strangers: false               # Unknown users are denied outright
+  owner_only_tools: true               # Tools require owner role (guests chat only)
+
+# --- Transports ---
+# Tokens may also be provided via TELEGRAM_BOT_TOKEN / DISCORD_BOT_TOKEN
+# environment variables (recommended over storing them in this file).
+transports:
+  cli:
+    session_id: cli
+  telegram:
+    token: ""
+  discord:
+    token: ""
+
+# --- Guardian (security layer) ---
+guardian_enabled: true                 # Master switch for input/output security checks
+guardian_sensitivity: medium           # Detection aggressiveness: low | medium | high
+                                       #   low    — only the most obvious attacks (instruction
+                                       #            substitution, authority impersonation)
+                                       #   medium — default; balanced OWASP LLM pattern set
+                                       #   high   — flags merely suspicious phrasing too
+                                       #            (hypothetical framing, encoded payloads)
+max_input_length: 4000                 # Reject inputs longer than this many characters
+custom_patterns_file: custom_patterns.txt  # Extra Guardian regexes, relative to this file
+
+# --- Audit ---
+audit_logging: true                    # Write security events to <data_dir>/logs/security.log
+
+# --- System prompt ---
+# Milly's persona/instructions load from system_prompt.txt (next to this
+# config file). Edit that file to customise behaviour. The key below is a
+# fallback only, used when system_prompt.txt is absent.
+# system_prompt: "You are Milly, a helpful local AI agent."
+
+# --- Memory (advanced) ---
+memory:
+  enabled: true
+  max_history: 50                      # Max user+assistant turn pairs kept per session
+
+# --- RAG (advanced) ---
+rag:
+  enabled: true
+  max_file_size_mb: 10                 # Skip docs larger than this during ingest
+  scan_for_injection: true             # Run Guardian over ingested documents
+  top_k: 3                             # Number of doc chunks retrieved per query
