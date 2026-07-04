@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "milly-agent"
+version = "0.1.0"
+description = "Milly — a local-first agentic AI assistant built on the Milly security core"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+dependencies = [
+    "ollama>=0.2.0",
+    "PyYAML>=6.0",
+    "rich>=13.7.0",
+    "pypdf>=6.7.3",
+    "requests>=2.31.0",
+]
+
+[project.optional-dependencies]
+discord = ["discord.py>=2.3.0"]
+
+[project.scripts]
+milly-agent = "milly_agent.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["milly_agent*"]

@@ -1,0 +1,20 @@
+# custom_patterns.txt — user-defined Guardian detection patterns
+#
+# Add your own prompt-injection detection patterns here without editing
+# guardian.py. Patterns loaded from this file are ALWAYS active, regardless
+# of the guardian_sensitivity level set in config.yaml.
+#
+# Format (one entry per line):
+#   - Blank lines and lines starting with '#' are ignored.
+#   - Each remaining line is a Python regular expression (case-insensitive).
+#   - Optionally, add a TAB followed by a human-readable name for the pattern;
+#     this name appears in audit logs and flag warnings. Without a name, the
+#     pattern is reported as "custom_pattern".
+#
+# Invalid regexes are skipped on load — a typo here will not crash Milly.
+#
+# Examples (uncomment and adapt):
+#
+# reveal\s+your\s+(system\s+)?prompt	prompt_extraction
+# exfiltrate\s+(the\s+)?(data|secrets?|keys?)	exfiltration_attempt
+# print\s+your\s+instructions
